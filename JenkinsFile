@@ -20,7 +20,7 @@ pipeline {
         
         stage('Testing Env') {
             steps {
-                echo "Running ${JOB_NAME}-${BUILD_NUMBER}"
+                echo "Running ${JOB_NAME}------${BUILD_NUMBER} on ${http://3.250.175.55:8080/job/simplejavaapptraining/}"
             }
         }
         stage('Test') {
