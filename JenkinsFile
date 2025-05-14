@@ -21,7 +21,7 @@ pipeline {
         
         stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh 'mvn -B -DskipTests clean package'
             }
         }
         
@@ -47,11 +47,11 @@ pipeline {
         //         }
         //     }
         // }
-        post {
-            always {
-                cleanWs()
-            }
-        }
+    //     post {
+    //         always {
+    //             cleanWs()
+    //         }
+    //     }
 
-    }
+    // }
 }
