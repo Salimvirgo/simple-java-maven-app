@@ -7,6 +7,7 @@ pipeline {
         sonarqube_token = credentials('sonar-secret-id')
         IMAGE_NAME = "salimvirgo/dockerchallenge"
         IMAGE_TAG = "latest"
+        CONTAINER_NAME = "nginx-deploy-container"
     }
 
     stages {
@@ -20,11 +21,10 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                    sh 'sudo docker build --no-cache -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                sh 'sudo docker build --no-cache -t ${IMAGE_NAME}:${IMAGE_TAG} .'
             }
         }
 
-        //  Optional: Push Docker image to a registry
         stage('Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
@@ -40,23 +40,27 @@ pipeline {
             }
         }
 
-
         stage('Deploy in Agent') {
             steps {
-                    sh 'sudo docker stop ${IMAGE_NAME}:${IMAGE_TAG} || true && docker rm ${IMAGE_NAME}:${IMAGE_TAG} || true docker run -d -p 9011:80 --name ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:${IMAGE_TAG}'
-                    // sh 'sudo docker run --rm -d -p 9011:80 ${IMAGE_NAME}:${IMAGE_TAG}'
+                sh '''
+                    # Stop and remove container if exists
+                    sudo docker stop ${CONTAINER_NAME} || true
+                    sudo docker rm ${CONTAINER_NAME} || true
 
+                    # Run new container
+                    sudo docker run -d -p 9011:80 --name ${CONTAINER_NAME} ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
             }
         }
-       
     }
 
-    // post {
-    //     success {
-    //         echo 'Pipeline executed successfully.'
-    //     }
-    //     failure {
-    //         echo 'Pipeline failed.'
-    //     }
-    // }
+    // Optional post block
+    post {
+        success {
+            echo '✅ Pipeline executed successfully.'
+        }
+        failure {
+            echo '❌ Pipeline failed.'
+        }
+    }
 }
