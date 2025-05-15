@@ -1,8 +1,8 @@
 
 FROM nginx:1.18.0
 
-ADD index.html /usr/share/nginx/html/
-ADD cicd.jpg /usr/share/nginx/html/
+COPY index.html /usr/share/nginx/html/
+COPY cicd.jpg /usr/share/nginx/html/
 
 
 EXPOSE 80
