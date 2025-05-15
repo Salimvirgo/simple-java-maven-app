@@ -7,7 +7,7 @@ pipeline {
         sonarqube_token = credentials('sonar-secret-id')
         IMAGE_NAME = "salimvirgo/dockerchallenge"
         IMAGE_TAG = "latest"
-        CONTAINER_NAME = "nginx-deploy-container"
+        CONTAINER_NAME = "ubuntu"
     }
 
     stages {
