@@ -43,7 +43,7 @@ pipeline {
         stage('Deploy in Agent') {
             steps {
                 sh '''
-                    PORT_IN_USE=$(sudo lsof -t -i:8008)
+                    PORT_IN_USE=$(sudo lsof -t -i:9011)
                     if [ -n "$PORT_IN_USE" ]; then
                     echo "Port 9011 in use, stopping process..."
                     sudo kill -9 $PORT_IN_USE || true
