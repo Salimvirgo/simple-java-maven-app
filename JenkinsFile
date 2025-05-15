@@ -43,7 +43,7 @@ pipeline {
         stage('Deploy in Agent') {
             steps {
                 
-                    sh 'sudo docker run -p 8080:8080 ${IMAGE_NAME}:${IMAGE_TAG}'
+                    sh 'sudo docker run -p 8888:8080 ${IMAGE_NAME}:${IMAGE_TAG}'
 
             }
         }
