@@ -1,7 +1,8 @@
 
 FROM nginx:1.18.0
 
-ADD index.html /app/
-ADD cicd.jpg /app/
+ADD index.html /usr/share/nginx/html/
+ADD cicd.jpg /usr/share/nginx/html/
 
-EXPOSE 8080
+
+EXPOSE 80
