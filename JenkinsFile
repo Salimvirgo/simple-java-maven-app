@@ -35,7 +35,7 @@ pipeline {
 
         stage('Connect to OpenShift Project') {
             steps {
-                sh 'sudo oc project ${project} .'
+                sh 'sudo oc project ${project}'
             }
         }
 
