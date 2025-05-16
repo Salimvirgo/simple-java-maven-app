@@ -1,3 +1,6 @@
+@Library('my_ocp_sharelib') _  
+import com.aviro.OpenShiftHelper  
+
 pipeline {
     agent {
         label 'builder'
@@ -5,9 +8,12 @@ pipeline {
 
     environment {
         sonarqube_token = credentials('sonar-secret-id')
-        IMAGE_NAME = "salimvirgo/dockerchallenge"
-        IMAGE_TAG = "latest"
-        CONTAINER_NAME = "nginx-deploy-container"
+        OC_TOKEN = credentials('openshift_id')  // Jenkins credentials
+        OC_SERVER = "https://api.rm1.0a51.p1.openshiftapps.com:6443"
+        PROJECT = "salimmjalloh46-dev"
+        IMAGE_NAME = "salimvirgo/dockerchallenge:latest"
+        APP_NAME = "web-terminal-tooling" 
+        APP_DEPLOYMENT = "workspacea190f5fcf8534249"
     }
 
     stages {
@@ -19,11 +25,20 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Login to OpenShift') {
             steps {
-                sh 'sudo docker build --no-cache -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+                script {
+                    OpenShiftHelper.login(this, OC_TOKEN, OC_SERVER)
+                }
             }
         }
+
+        stage('Connect to OpenShift Project') {
+            steps {
+                sh 'sudo oc project ${PROJECT} .'
+            }
+        }
+
 
         stage('Trivy Security Scan') {
             steps {
@@ -58,41 +73,50 @@ pipeline {
             }
         }
 
-        stage('Push Docker Image') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-id',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                        echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
-                        sudo docker push ${IMAGE_NAME}:${IMAGE_TAG}
-                    '''
-                }
-            }
-        }
+        // stage('Push Docker Image') {
+        //     steps {
+        //         withCredentials([usernamePassword(
+        //             credentialsId: 'docker-hub-id',
+        //             usernameVariable: 'DOCKER_USER',
+        //             passwordVariable: 'DOCKER_PASS'
+        //         )]) {
+        //             sh '''
+        //                 echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
+        //                 sudo docker push ${IMAGE_NAME}:${IMAGE_TAG}
+        //             '''
+        //         }
+        //     }
+        // }
+        
 
-        stage('Deploy in Agent') {
+         stage('Deploy in Agent') {
             steps {
                 sh '''
-                    PORT_IN_USE=$(sudo lsof -t -i:9011)
-                    if [ -n "$PORT_IN_USE" ]; then
-                    echo "Port 9011 in use, stopping process..."
-                    sudo kill -9 $PORT_IN_USE || true
-                    fi
-
-                    # Alternatively, remove docker containers using port 9011
-                    CONTAINER=$(sudo docker ps -q --filter "publish=9011")
-                    if [ -n "$CONTAINER" ]; then
-                    echo "Docker container using port 9011 found, stopping it..."
-                    sudo docker rm -f $CONTAINER
-                    fi
-
-                    sudo docker run -d -p 9011:80 ${IMAGE_NAME}:${IMAGE_TAG}
+                    oc new-app ${IMAGE} -name=${APP_NAME} --namespace=${PROJECT}
                     '''
             }
         }
+
+        // stage('Deploy in Agent') {
+        //     steps {
+        //         sh '''
+        //             PORT_IN_USE=$(sudo lsof -t -i:9011)
+        //             if [ -n "$PORT_IN_USE" ]; then
+        //             echo "Port 9011 in use, stopping process..."
+        //             sudo kill -9 $PORT_IN_USE || true
+        //             fi
+
+        //             # Alternatively, remove docker containers using port 9011
+        //             CONTAINER=$(sudo docker ps -q --filter "publish=9011")
+        //             if [ -n "$CONTAINER" ]; then
+        //             echo "Docker container using port 9011 found, stopping it..."
+        //             sudo docker rm -f $CONTAINER
+        //             fi
+
+        //             sudo docker run -d -p 9011:80 ${IMAGE_NAME}:${IMAGE_TAG}
+        //             '''
+        //     }
+        // }
     }
 
     // Optional post block
