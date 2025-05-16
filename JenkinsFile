@@ -92,7 +92,7 @@ pipeline {
          stage('Deploy in Agent') {
             steps {
                 sh '''
-                    oc new-app ${IMAGE} -name=${APP_NAME} --namespace=${PROJECT}
+                    oc new-app ${IMAGE_NAME} -name=${APP_NAME} --namespace=${PROJECT}
                     '''
             }
         }
